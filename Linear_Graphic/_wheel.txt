@@ -1,0 +1,32 @@
+Мышиное колесо.
+Если компонент не может иметь фокус ввода и поэтому не принимает сообщения от 
+колеса, то выкрутиться можно только на уровне приложения.
+В главной форме должен быть обработчик событий OnMessage, который можно сделать
+одним из двух способов.
+1.
+//описать процедуру (параметры именно такие)
+procedure TForm1.AppMessage(var Msg: TMsg; var Handled: Boolean);
+
+//и присвоить указатель на нее при создании формы
+procedure TForm1.FormCreate(Sender: TObject);
+begin
+  Application.OnMessage := AppMessage;
+end;
+
+2. Слегка попроще.
+В закладке Additional палитры компонентов есть не визуальный компонет ApplicationEvents.
+Его поместить на форму и создать процедуру в свойстве OnMessage.
+
+И в том и другом случае в обработчике событий должен быть такой код:
+procedure TForm1.AppMessage(var Msg: TMsg; var Handled: Boolean);
+begin
+  if Msg.message=WM_MOUSEWHEEL then begin
+    //определяется окно, над которым курсор мыши и ему посылается сообщение от колеса
+    Msg.hwnd:=WindowFromPoint(SmallPointToPoint(TSmallPoint(Msg.lParam)));
+    SendMessage(Msg.hwnd, WM_MOUSEWHEEL, Msg.WParam, Msg.LParam);
+    Handled := True;
+  end;
+end;
+
+Тогда компонент будет получать сообщение от колеса и обрабатывать его
+В компоненте должен быть обработчик сообщений вращения колеса (WMMouseWheel).
